@@ -65,8 +65,6 @@ def main(config: DictConfig):
 
     config: ProjectConfig = OmegaConf.to_object(config)
 
-    assert config.diffusion.T == config.unet.T
-
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     # Enable TF32, set seed, and get logger

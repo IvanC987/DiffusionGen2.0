@@ -21,6 +21,7 @@ class UNetConfig:
 
 @dataclass
 class DiffusionConfig:
+    prediction_type: str = MISSING  # Either 'epsilon' or 'velocity'
     schedule: str = MISSING
     T: int = 1000  # Repeated, but will assert to ensure equal to UNetConfig's
     beta1: float = 0.00085

@@ -1,3 +1,4 @@
+prediction_type: velocity
 schedule: cosine
 T: 1000
 s: 0.008

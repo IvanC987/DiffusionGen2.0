@@ -43,7 +43,12 @@ class DiffusionModel(nn.Module):
     def __init__(self, diffusion_config: DiffusionConfig, unet_config: UNetConfig):
         super().__init__()
 
+        assert diffusion_config.prediction_type in ["velocity", "epsilon"]
+        assert diffusion_config.T == unet_config.T
+
+        self.eps_pred = diffusion_config.prediction_type == "epsilon"
         self.T = diffusion_config.T
+
 
         schedule = diffusion_config.schedule
         T = diffusion_config.T
@@ -79,9 +84,16 @@ class DiffusionModel(nn.Module):
         assert len(timesteps) == clean_latents.shape[0] == prompt.shape[0]  # Should all be of same B
 
         noised_latents, true_noise = self._forward_process(clean_latents, timesteps)
-        pred_noise = self.unet(noised_latents, prompt, timesteps)
+        pred = self.unet(noised_latents, prompt, timesteps)
 
-        return pred_noise, true_noise
+        if self.eps_pred:
+            target = true_noise
+        else:
+            sqrt_alpha_bar = self.sqrt_alpha_bar[timesteps].view(-1, 1, 1, 1)
+            sqrt_one_minus_alpha_bar = self.sqrt_one_minus_alpha_bar[timesteps].view(-1, 1, 1, 1)
+            target = sqrt_alpha_bar * true_noise - sqrt_one_minus_alpha_bar * clean_latents
+
+        return pred, target
 
     @torch.no_grad()
     def generate(self, prompt: torch.Tensor, negative_prompts: torch.Tensor, latent_dim: int, cfg_scale: torch.Tensor):
@@ -103,10 +115,22 @@ class DiffusionModel(nn.Module):
             # Create timestep tensor
             timesteps = torch.full((batch,), t, device=device, dtype=torch.long)
 
-            # Predict noise
-            pred_noise = self.unet(latents.repeat(2, 1, 1, 1), combined_prompts, timesteps.repeat(2))
-            cond_output, uncond_output = pred_noise.chunk(2, dim=0)
-            pred_noise = cfg_scale.reshape(-1, 1, 1, 1) * (cond_output - uncond_output) + uncond_output
+            # Get pred from unet, apply cfg
+            pred = self.unet(latents.repeat(2, 1, 1, 1), combined_prompts, timesteps.repeat(2))
+            cond_output, uncond_output = pred.chunk(2, dim=0)
+            pred = cfg_scale.reshape(-1, 1, 1, 1) * (cond_output - uncond_output) + uncond_output
+
+            if self.eps_pred:
+                pred_noise = pred
+            else:
+                alpha_bar_t = self.alpha_bar[t]
+                sqrt_alpha_bar_t = torch.sqrt(alpha_bar_t)
+                sqrt_one_minus_alpha_bar_t = torch.sqrt(1 - alpha_bar_t)
+
+                pred_noise = (
+                        sqrt_one_minus_alpha_bar_t * latents +
+                        sqrt_alpha_bar_t * pred
+                )
 
             # Compute mean of reverse process
             alpha_t = self.alpha[t]

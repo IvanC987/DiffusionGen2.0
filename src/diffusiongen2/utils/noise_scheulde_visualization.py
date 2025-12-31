@@ -60,3 +60,28 @@ plt.legend()
 plt.grid(alpha=0.3)
 plt.tight_layout()
 plt.show()
+
+
+# =========================
+# SNR + alpha_bar plot
+# =========================
+
+# Signal-to-noise ratio per timestep
+# SNR_t = alpha_bar / (1 - alpha_bar)
+snr = alpha_bar / (1.0 - alpha_bar)
+
+plt.figure(figsize=(10, 6))
+plt.plot(alpha_bar, label=r"$\bar{\alpha}_t$ (signal power)", color="black")
+plt.plot(1.0 - alpha_bar, label=r"$1 - \bar{\alpha}_t$ (noise power)", color="green")
+plt.plot(snr, label=r"SNR$_t = \bar{\alpha}_t / (1 - \bar{\alpha}_t)$", color="red")
+
+plt.xlabel("Timestep")
+plt.ylabel("Value")
+plt.title("Signal, Noise, and SNR Across Diffusion Timesteps")
+plt.yscale("log")  # IMPORTANT: SNR spans many orders of magnitude
+plt.legend()
+plt.grid(alpha=0.3)
+plt.tight_layout()
+plt.show()
+
+print(snr.tolist())

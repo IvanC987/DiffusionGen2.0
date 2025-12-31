@@ -131,8 +131,8 @@ def train(model: DiffusionModel,
                 latents, text_embd = latents.to(device), text_embd.to(device)
 
                 with torch.autocast(device_type=device, dtype=torch.bfloat16 if (device == "cuda" and torch.cuda.is_bf16_supported()) else torch.float32):
-                    pred_noise, true_noise = model(latents, text_embd, timesteps)
-                    loss = criterion(pred_noise, true_noise)  # Looking back in my v1.0 project, it seems like I decoded the latent noise to compute diff...*FacePalm*
+                    pred, target = model(latents, text_embd, timesteps)
+                    loss = criterion(pred, target)  # Looking back in my v1.0 project, it seems like I decoded the latent noise to compute diff...*FacePalm*
 
                 loss /= mini_steps
                 loss_accum += loss.item()
@@ -185,8 +185,8 @@ def train(model: DiffusionModel,
                     latents, text_embd = latents.to(device), text_embd.to(device)
 
                     with torch.autocast(device_type=device, dtype=torch.bfloat16 if (device == "cuda" and torch.cuda.is_bf16_supported()) else torch.float32):
-                        pred_noise, true_noise = model(latents, text_embd, timesteps)
-                        loss = criterion(pred_noise, true_noise)
+                        pred, target = model(latents, text_embd, timesteps)
+                        loss = criterion(pred, target)
 
                     local_val_loss.append(loss.item())
 
