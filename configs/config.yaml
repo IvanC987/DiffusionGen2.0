@@ -1,0 +1,14 @@
+defaults:
+  - unet: base
+  - diffusion: curved
+  - data: base
+  - training: base
+  - optim: base
+  - eval: base
+  - _self_
+
+
+hydra:
+  run:
+    dir: outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}_${training.run_name}
+

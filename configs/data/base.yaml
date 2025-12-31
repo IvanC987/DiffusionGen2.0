@@ -1,0 +1,3 @@
+shard_dir: "data/prep_data/Drag256/tensor_shards"
+val_split: 0.01  # DS Loader guarantees 1 shard for val. For large training of 600k images, 6k for validation is fine
+vae_model_id: "stabilityai/sd-vae-ft-ema"

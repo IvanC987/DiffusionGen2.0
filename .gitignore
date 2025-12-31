@@ -1,0 +1,11 @@
+.idea
+__pycache__
+diffusiongen2.egg-info
+
+assets
+docker
+/data/
+misc
+outputs
+
+

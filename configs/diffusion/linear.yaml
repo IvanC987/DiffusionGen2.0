@@ -1,0 +1,5 @@
+schedule: linear
+T: 1000
+beta1: 0.00085
+beta2: 0.0120
+s: 0.008
