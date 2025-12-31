@@ -71,7 +71,6 @@ def generate_and_log_samples(model: DiffusionModel,
 # TODO: Later on, add EMA for weight updates
 def train(model: DiffusionModel,
           optimizer: torch.optim.Optimizer,
-          criterion: torch.nn.Module,
           scheduler: torch.optim.lr_scheduler.LRScheduler,
           vae: AutoencoderKL,
           dataset_loader: DatasetLoader,
@@ -81,6 +80,7 @@ def train(model: DiffusionModel,
           T: int,
           device: str):
 
+    diffusion_config = config.diffusion
     training_config = config.training
     optim_config = config.optim
     eval_config = config.eval
@@ -130,10 +130,16 @@ def train(model: DiffusionModel,
                 timesteps = torch.randint(1, T, (latents.shape[0],)).to(device)
                 latents, text_embd = latents.to(device), text_embd.to(device)
 
+                # Looking back in my v1.0 project, it seems like I decoded the latent noise to compute diff...*FacePalm*
                 with torch.autocast(device_type=device, dtype=torch.bfloat16 if (device == "cuda" and torch.cuda.is_bf16_supported()) else torch.float32):
                     pred, target = model(latents, text_embd, timesteps)
-                    loss = criterion(pred, target)  # Looking back in my v1.0 project, it seems like I decoded the latent noise to compute diff...*FacePalm*
 
+                    # Calculate the loss. Don't want to reduce as we need to apply min-snr
+                    raw_loss = torch.nn.functional.mse_loss(pred, target, reduction="none")
+                    snr = model.alpha_bar[timesteps] / (1 - model.alpha_bar[timesteps])
+                    min_snr = torch.clamp(snr, max=diffusion_config.min_snr_gamma).reshape(-1, 1, 1, 1)
+
+                    loss = (min_snr * raw_loss).mean()
                 loss /= mini_steps
                 loss_accum += loss.item()
                 loss.backward()
@@ -186,7 +192,7 @@ def train(model: DiffusionModel,
 
                     with torch.autocast(device_type=device, dtype=torch.bfloat16 if (device == "cuda" and torch.cuda.is_bf16_supported()) else torch.float32):
                         pred, target = model(latents, text_embd, timesteps)
-                        loss = criterion(pred, target)
+                        loss = torch.nn.functional.mse_loss(pred, target)
 
                     local_val_loss.append(loss.item())
 

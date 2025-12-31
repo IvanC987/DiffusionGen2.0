@@ -81,7 +81,6 @@ def main(config: DictConfig):
 
     model = DiffusionModel(diffusion_config=config.diffusion, unet_config=config.unet).to(device)
     optimizer = AdamW(model.parameters(), lr=config.optim.max_lr, weight_decay=config.optim.weight_decay)
-    criterion = torch.nn.MSELoss()
     scheduler = CosineAnnealingLR(optimizer, T_max=config.training.epochs, eta_min=config.optim.min_lr)
 
     vae: AutoencoderKL = AutoencoderKL.from_pretrained(config.data.vae_model_id).to(device)
@@ -94,7 +93,6 @@ def main(config: DictConfig):
 
     train(model=model,
           optimizer=optimizer,
-          criterion=criterion,
           scheduler=scheduler,
           vae=vae,
           dataset_loader=dataset_loader,

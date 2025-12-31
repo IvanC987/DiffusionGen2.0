@@ -27,6 +27,7 @@ class DiffusionConfig:
     beta1: float = 0.00085
     beta2: float = 0.0120
     s: float = 0.008
+    min_snr_gamma: float = 5.0
 
 
 @dataclass
