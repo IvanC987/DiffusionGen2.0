@@ -1,5 +1,5 @@
-prompts_path: "assets/18_dpq_val_embd.pt"       # .pt file where it contains prompts, prompt embd, and null embd for evaluation
-cfg_scales: [2.0, 4.0, 6.0, 8.0]  # Default scales to test
+prompts_path: "assets/36_final_val_embd.pt"       # .pt file where it contains prompts, prompt embd, and null embd for evaluation
+cfg_scales: [2.0, 5.0, 8.0]  # Default scales to test
 log_every_n_steps: 64     # Frequency for logging training loss to console
 val_every_n_epochs: 1     # Frequency for running validation
 sample_every_n_epochs: 5  # Frequency for image gen (can be expensive and doesn't change much over later epochs)

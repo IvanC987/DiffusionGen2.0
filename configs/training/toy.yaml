@@ -1,0 +1,13 @@
+effective_batch_size: 64
+batch_size: 32
+
+compile_model: true
+
+epochs: 15
+loss_ema_beta: 0.95  # 90% of the weights would be at the 45 most recent steps for beta=0.95. (0.96, 56), (0.97, 76)
+weight_ema_beta: 0.975  # Need to adjust this carefully based on number of training samples + epochs
+cfg_dropout: 0.1
+seed: 89
+
+ckpt_interval: 5
+

@@ -1,0 +1,5 @@
+prompts_path: "assets/4_river_val_embd.pt"       # .pt file where it contains prompts, prompt embd, and null embd for evaluation
+cfg_scales: [2.0, 5.0, 8.0]  # Default scales to test
+log_every_n_steps: 16     # Frequency for logging training loss to console
+val_every_n_epochs: 1     # Frequency for running validation
+sample_every_n_epochs: 3  # Frequency for image gen (can be expensive and doesn't change much over later epochs)

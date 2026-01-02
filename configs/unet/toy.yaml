@@ -1,0 +1,12 @@
+in_channels: 4
+channels: [64, 128, 192, 256]
+n_bn: 1
+n_groups: 16
+T: 1000
+t_embd: 64
+t_embd_scale: 4
+n_embd: 512
+n_heads: 16
+n_layers: 3
+dropout: 0.1
+enable_flash_attention: true

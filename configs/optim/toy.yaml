@@ -1,0 +1,4 @@
+max_lr: 5e-4
+min_lr: 1e-5
+grad_clip: 1.0
+weight_decay: 0.01  # GPT recommends smaller, Gemini says larger. Adjust accordingly.
