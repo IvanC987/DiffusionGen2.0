@@ -2,10 +2,12 @@
 __pycache__
 diffusiongen2.egg-info
 
-assets
-docker
+assets/*
+!assets/4_river_val_embd.pt
+
+docker/
 /data/
-misc
-outputs
+misc/
+outputs/
 
 

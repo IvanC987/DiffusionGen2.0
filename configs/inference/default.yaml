@@ -1,0 +1,7 @@
+checkpoint_path: outputs\22-29-18_toy_run\checkpoints\epoch_14_tl_0.8136.pt
+vae_model_id: "stabilityai/sd-vae-ft-ema"
+clip_model_id: "openai/clip-vit-base-patch32"
+
+cfg_scale: 5.0
+seed: 89
+latent_dim: 32  # Latent dim from VAE seen by model during training. If model is trained on 256x256 images, set to 32, if 512x512, set to 64
