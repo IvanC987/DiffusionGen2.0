@@ -146,6 +146,18 @@ body.dark-mode {
   outline: none;
 }
 
+.advanced-panel input:disabled {
+  background-color: #f0f0f0;
+  color: #999;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.dark-mode .advanced-panel input:disabled {
+  background-color: #3a3a52;
+  color: #666;
+}
+
 .show-advanced .advanced-panel {
   left: 0;
 }
@@ -229,6 +241,18 @@ body.dark-mode {
 .sidebar select:focus {
   border-color: #6a11cb;
   outline: none;
+}
+
+.sidebar input:disabled {
+  background-color: #f0f0f0;
+  color: #999;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.dark-mode .sidebar input:disabled {
+  background-color: #2a2a3a;
+  color: #666;
 }
 
 /* Config Row (Batch, CFG, Steps) */
@@ -435,6 +459,18 @@ body.dark-mode {
 }
 
 .dark-mode #progressText {
+  color: #aaa;
+}
+
+.preview-step {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #666;
+  display: none;
+  text-align: center;
+}
+
+.dark-mode .preview-step {
   color: #aaa;
 }
 

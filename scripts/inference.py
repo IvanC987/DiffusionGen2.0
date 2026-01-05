@@ -52,7 +52,10 @@ def generate_latent(model: DiffusionModel,
                     use_ddpm: bool,
                     num_steps: int,
                     seed: int | None,
-                    device: str) -> list[Image]:
+                    device: str,
+                    preview_interval: int,
+                    preview_callback=None,
+                    progress_callback=None) -> list[Image]:
 
     if seed is not None:
         torch.manual_seed(seed)
@@ -75,8 +78,10 @@ def generate_latent(model: DiffusionModel,
     # It's a feature, not a bug lol
     timesteps_list = torch.linspace(start=T-1, end=0, steps=min(num_steps, T))
     timesteps_list = timesteps_list.round().long().unique_consecutive()
-    for t in tqdm(timesteps_list):
-        t = t.item()
+    for t_idx in tqdm(range(len(timesteps_list))):
+        t = timesteps_list[t_idx].item()
+        prev_t = timesteps_list[t_idx+1].item() if t_idx < len(timesteps_list)-1 else -1
+
         timesteps = torch.full((batch_size,), t, device=device, dtype=torch.long)
 
         with torch.autocast(device_type=device, dtype=torch.bfloat16 if (device == "cuda" and torch.cuda.is_bf16_supported()) else torch.float32):
@@ -101,11 +106,27 @@ def generate_latent(model: DiffusionModel,
         alpha_t = model.alpha[t]
         sqrt_one_minus_alpha_bar_t = model.sqrt_one_minus_alpha_bar[t]
 
-        # Compute noise if t > 0 and sample the previous timestep
-        noise = torch.randn_like(latents) if t > 0 else 0
-        sigma_t = torch.sqrt(model.beta[t])
+        if use_ddpm:
+            # Compute noise if t > 0 and sample the previous timestep
+            noise = torch.randn_like(latents) if t > 0 else 0
+            sigma_t = torch.sqrt(model.beta[t])
 
-        latents = (latents - (model.beta[t] / sqrt_one_minus_alpha_bar_t) * pred_noise) / torch.sqrt(alpha_t) + sigma_t * noise
+            latents = (latents - (model.beta[t] / sqrt_one_minus_alpha_bar_t) * pred_noise) / torch.sqrt(alpha_t) + sigma_t * noise
+        else:  # DDIM
+            x_hat_0 = (latents - sqrt_one_minus_alpha_bar_t * pred_noise) / model.sqrt_alpha_bar[t]
+            if t > 0:
+                latents = model.sqrt_alpha_bar[prev_t] * x_hat_0 + model.sqrt_one_minus_alpha_bar[prev_t] * pred_noise
+            else:
+                latents = x_hat_0
+
+        # Update after this step
+        if progress_callback is not None:
+            progress_callback((t_idx + 1) / len(timesteps_list))
+
+        if preview_callback and t_idx % preview_interval == 0:
+            # Decode just the first image and send that back
+            img = _decode_latent(vae=vae, latents=latents[:1])[0]
+            preview_callback(img, t_idx)
 
     return _decode_latent(vae=vae, latents=latents)
 
@@ -130,14 +151,11 @@ def _decode_latent(vae: AutoencoderKL, latents: torch.Tensor) -> list[Image]:
     return final_images
 
 
-# TODO: Later on when adding in DDIM, split it up? Will have too many if/else/loop blocks otherwise
-# @torch.inference_mode
-# def _generate_ddpm(latents: torch.Tensor, combined_prompt: torch.Tensor):
+# def _update_ddpm(latents: torch.Tensor, combined_prompt: torch.Tensor):
 #     pass
 #
 #
-# @torch.inference_mode
-# def _generate_ddim():
+# def _update_ddim():
 #     pass
 
 

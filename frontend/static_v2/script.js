@@ -29,16 +29,73 @@ document.addEventListener('click', function(event) {
 
 // No validation needed for batch_size - it's a select with predefined values
 
-// Poll the server for progress every 2s
-setInterval(async function() {
+// Check health once on page load
+async function checkHealthOnce() {
   try {
     const response = await fetch('/health');
     const data = await response.json();
-    // Can be used to show connection status if needed
-  } catch (error) {
-    console.error('Error checking health:', error);
+    console.log('Backend health check:', data.status);
+  } catch (e) {
+    console.error("Backend not reachable");
   }
-}, 2000);
+}
+
+window.addEventListener('load', checkHealthOnce);
+
+// Progress polling function
+async function pollProgress(progressBar, progressText) {
+  try {
+    const res = await fetch("/progress");
+    const data = await res.json();
+    const pct = data.progress;
+
+    progressBar.value = pct;
+    progressText.textContent = pct + "%";
+
+    if (pct < 100) {
+      setTimeout(() => pollProgress(progressBar, progressText), 400);
+    }
+  } catch (e) {
+    console.error("Progress polling failed", e);
+  }
+}
+
+// Preview polling variables and functions (independent from progress polling)
+let previewPolling = false;
+
+async function pollPreview(resultImage, previewStepLabel) {
+  if (!previewPolling) return;
+
+  try {
+    const res = await fetch("/preview");
+    const data = await res.json();
+
+    if (data.image) {
+      resultImage.src = `data:image/png;base64,${data.image}`;
+      resultImage.style.display = "block";
+    }
+
+    if (data.step !== null && data.step !== undefined && data.total_steps !== null && data.total_steps !== undefined) {
+      previewStepLabel.textContent = `Denoising step ${data.step} / ${data.total_steps}`;
+      previewStepLabel.style.display = "block";
+    }
+  } catch (err) {
+    console.error("Preview polling error:", err);
+  }
+
+  if (previewPolling) {
+    setTimeout(() => pollPreview(resultImage, previewStepLabel), 500);
+  }
+}
+
+function startPreviewPolling(resultImage, previewStepLabel) {
+  previewPolling = true;
+  pollPreview(resultImage, previewStepLabel);
+}
+
+function stopPreviewPolling() {
+  previewPolling = false;
+}
 
 // Generate Form Submission
 document.getElementById('generateForm').addEventListener('submit', async function(event) {
@@ -53,10 +110,24 @@ document.getElementById('generateForm').addEventListener('submit', async functio
   // Show progress bar
   const progressBar = document.getElementById('progressBar');
   const progressText = document.getElementById('progressText');
+  const previewStepLabel = document.getElementById('previewStepLabel');
+  const resultImage = document.getElementById('resultImage');
+  const realTimeDenoisingEnabled = document.getElementById('real_time_denoising').checked;
+
   progressBar.style.display = 'block';
   progressText.style.display = 'block';
   progressBar.value = 0;
   progressText.textContent = '0%';
+  previewStepLabel.style.display = 'none';
+  previewStepLabel.textContent = '';
+
+  // Start polling progress
+  pollProgress(progressBar, progressText);
+
+  // Start preview polling if real-time denoising is enabled
+  if (realTimeDenoisingEnabled) {
+    startPreviewPolling(resultImage, previewStepLabel);
+  }
 
   try {
     // Build JSON payload
@@ -67,7 +138,11 @@ document.getElementById('generateForm').addEventListener('submit', async functio
       cfg: Number(document.getElementById('cfg').value),
       seed: document.getElementById('seed').value === '' ? null : Number(document.getElementById('seed').value),
       batch_size: Number(document.getElementById('batch_size').value),
-      use_ema: document.getElementById('use_ema').checked
+      use_ema: document.getElementById('use_ema').checked,
+      use_ddpm: document.getElementById('sampling_method').value === 'ddpm',
+      use_real_esrgan: document.getElementById('use_real_esrgan').checked,
+      real_time_denoising: realTimeDenoisingEnabled,
+      preview_interval: Number(document.getElementById('preview_interval').value)
     };
 
     // Send request to backend
@@ -121,6 +196,9 @@ document.getElementById('generateForm').addEventListener('submit', async functio
     progressBar.style.display = 'none';
     progressText.style.display = 'none';
 
+    // Stop preview polling
+    stopPreviewPolling();
+
   } catch (error) {
     console.error('Error generating image:', error);
     alert('Error generating image: ' + error.message);
@@ -128,6 +206,9 @@ document.getElementById('generateForm').addEventListener('submit', async functio
     // Hide progress on error
     progressBar.style.display = 'none';
     progressText.style.display = 'none';
+
+    // Stop preview polling on error
+    stopPreviewPolling();
   } finally {
     // Re-enable button
     generateBtn.disabled = false;
@@ -217,4 +298,17 @@ document.getElementById('batch_size').addEventListener('input', function() {
   let val = parseInt(this.value);
   if (val < 1) this.value = 1;
   if (val > 10) this.value = 10;
+});
+
+// Real time denoising toggle - enable/disable preview interval input
+document.getElementById('real_time_denoising').addEventListener('change', function() {
+  const previewIntervalInput = document.getElementById('preview_interval');
+  previewIntervalInput.disabled = !this.checked;
+});
+
+// Initialize preview interval state on page load
+window.addEventListener('load', function() {
+  const realTimeDenoising = document.getElementById('real_time_denoising');
+  const previewIntervalInput = document.getElementById('preview_interval');
+  previewIntervalInput.disabled = !realTimeDenoising.checked;
 });

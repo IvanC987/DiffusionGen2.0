@@ -30,9 +30,30 @@
       <label for="seed">Random Seed (Optional):</label>
       <input type="number" id="seed" name="seed" placeholder="Leave empty for random">
 
+      <label for="sampling_method" style="margin-top: 15px;">Sampling Method:</label>
+      <select id="sampling_method" name="sampling_method">
+        <option value="ddim" selected>DDIM</option>
+        <option value="ddpm">DDPM</option>
+      </select>
+
       <div style="margin-top: 15px; display: flex; align-items: center;">
         <input type="checkbox" id="use_ema" name="use_ema" checked style="margin-right: 8px; width: 16px; height: 16px;">
         <label for="use_ema" style="margin: 0; line-height: 1; transform: translateY(-5px);">Use EMA</label>
+      </div>
+
+      <div style="margin-top: 15px; display: flex; align-items: center;">
+        <input type="checkbox" id="use_real_esrgan" name="use_real_esrgan" checked style="margin-right: 8px; width: 16px; height: 16px;">
+        <label for="use_real_esrgan" style="margin: 0; line-height: 1; transform: translateY(-5px);">Use Real-ESRGAN</label>
+      </div>
+
+      <div style="margin-top: 10px; display: flex; align-items: center;">
+        <input type="checkbox" id="real_time_denoising" name="real_time_denoising" checked style="margin-right: 8px; width: 16px; height: 16px;">
+        <label for="real_time_denoising" style="margin: 0; line-height: 1; transform: translateY(-5px);">Real Time Denoising</label>
+      </div>
+
+      <div style="margin-top: 10px;">
+        <label for="preview_interval">Preview Interval (ms):</label>
+        <input type="number" id="preview_interval" name="preview_interval" value="5" min="1" max="100" step="1">
       </div>
 
       <p style="margin-top: 15px; color: #666; font-size: 13px;">Other parameters available in Configuration panel on the left.</p>
@@ -54,7 +75,7 @@
             </div>
             <div class="config-item">
               <label for="cfg">CFG Scale:</label>
-              <input type="number" id="cfg" name="cfg" value="7.5" min="0" max="20" step="0.1">
+              <input type="number" id="cfg" name="cfg" value="5.0" min="-20" max="20" step="0.5">
             </div>
             <div class="config-item">
               <label for="steps">Steps:</label>
@@ -107,6 +128,7 @@
 
             <progress id="progressBar" value="0" max="100"></progress>
             <div id="progressText">0%</div>
+            <div id="previewStepLabel" class="preview-step"></div>
             <button id="downloadButton" type="button">Download Image</button>
           </div>
         </div>

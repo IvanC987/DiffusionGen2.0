@@ -5,6 +5,10 @@ diffusiongen2.egg-info
 assets/*
 !assets/4_river_val_embd.pt
 
+frontend/*
+!frontend/static_v2/
+!frontend/templates_v2/
+
 docker/
 /data/
 misc/

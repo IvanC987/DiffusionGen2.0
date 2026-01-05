@@ -36,6 +36,11 @@ inf_cfg: dict | None = None
 device: str | None = None
 dtype: torch.dtype | None = None
 
+generation_progress: float = 0.0
+latest_preview_image: str | None = None
+preview_step: int | None = None
+total_steps: int | None = None
+
 generation_lock = threading.Lock()
 
 
@@ -47,6 +52,10 @@ class GenerateRequest(BaseModel):
     cfg: float
     seed: int | None
     use_ema: bool
+    use_ddpm: bool
+    use_real_esrgan: bool
+    real_time_denoising: bool
+    preview_interval: int
 
 
 class GenerateResponse(BaseModel):
@@ -110,8 +119,26 @@ def tokenize_prompt(prompt: str) -> torch.Tensor:
     return text_embd
 
 
+def set_progress(p: float):
+    global generation_progress
+    generation_progress = p
+
+
+def preview_callback(decoded_image: Image, step: int):
+    global latest_preview_image, preview_step
+    latest_preview_image = pil_to_base64(decoded_image)
+    preview_step = step
+
+
 @app.post("/generate", response_model=GenerateResponse)
 def generate(req: GenerateRequest):
+    global generation_progress, latest_preview_image, preview_step, total_steps
+
+    total_steps = req.steps
+    latest_preview_image = None
+    preview_step = None
+    generation_progress = 0.0
+
     if raw_model is None or ema_model is None or vae is None:
         raise HTTPException(status_code=503, detail="Model not loaded")
 
@@ -119,6 +146,7 @@ def generate(req: GenerateRequest):
     negative_embd = tokenize_prompt(req.negative_prompt)
 
     with generation_lock:
+
         images = generate_latent(
             model=ema_model if req.use_ema else raw_model,
             vae=vae,
@@ -128,12 +156,16 @@ def generate(req: GenerateRequest):
             T=raw_model.T,
             batch_size=req.batch_size,
             latent_dim=inf_cfg["latent_dim"],
-            use_ddpm=True,
+            use_ddpm=req.use_ddpm,
             num_steps=req.steps,
             seed=req.seed,
             device=device,
+            preview_interval=max(1, req.preview_interval),
+            preview_callback=preview_callback,
+            progress_callback=set_progress
         )
 
+    generation_progress = 1.0
     encoded_images = [pil_to_base64(img) for img in images]
 
     return GenerateResponse(
@@ -153,4 +185,20 @@ def health():
         "model_loaded": model_loaded,
         "vae_loaded": vae_loaded,
         "clip_loaded": clip_loaded,
+    }
+
+
+@app.get("/progress")
+def progress():
+    return {
+        "progress": int(generation_progress * 100)
+    }
+
+
+@app.get("/preview")
+def preview():
+    return {
+        "image": latest_preview_image,
+        "step": preview_step,
+        "total_steps": total_steps
     }
