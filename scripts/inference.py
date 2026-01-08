@@ -59,6 +59,9 @@ def generate_latent(model: DiffusionModel,
                     vae: AutoencoderKL,
                     prompt: torch.Tensor,
                     negative_prompt: torch.Tensor,
+                    init_latent: torch.Tensor | None,
+                    img2img_strength: float | None,
+                    latent_mask: torch.Tensor | None,
                     cfg: float,
                     T: int,
                     batch_size: int,
@@ -80,17 +83,32 @@ def generate_latent(model: DiffusionModel,
 
     assert list(prompt.shape) == [1, 77, 512]  # Assuming just a single prompt, max padded for now
     assert prompt.shape == negative_prompt.shape  # Negative prompt should be empty string
+    if latent_mask is not None:
+        assert init_latent is not None
+        # assert ((latent_mask == 0) | (latent_mask == 1)).all()
+        assert latent_mask.min() >= 0 and latent_mask.max() <= 1
+        inverse_mask = 1 - latent_mask
 
     prompt = prompt.repeat(batch_size, 1, 1)
     negative_prompt = negative_prompt.repeat(batch_size, 1, 1)
 
-    latents = torch.randn((batch_size, 4, latent_dim, latent_dim), dtype=prompt.dtype, device=device)
+    img2img_strength = max(0.0, min(float(img2img_strength), 1.0))
+
+    if init_latent is not None:
+        t_start = int(img2img_strength * (T-1))
+        t_start = min(T-1, max(t_start, 1))
+        org_noise = torch.randn_like(init_latent)
+        latents = model.sqrt_alpha_bar[t_start] * init_latent + model.sqrt_one_minus_alpha_bar[t_start] * org_noise
+    else:
+        t_start = T-1
+        latents = torch.randn((batch_size, 4, latent_dim, latent_dim), dtype=prompt.dtype, device=device)
+
     combined_prompts = torch.cat((prompt, negative_prompt), dim=0)  # Should be [2, 77, 512] now
     cfg_scales = torch.tensor([cfg] * batch_size, dtype=torch.float32, device=device).reshape(batch_size, 1, 1, 1)
 
     # Normally steps=T, but experimentally it would be interesting to see result when skipping steps
     # It's a feature, not a bug lol
-    timesteps_list = torch.linspace(start=T-1, end=0, steps=min(num_steps, T))
+    timesteps_list = torch.linspace(start=t_start, end=0, steps=min(num_steps, T))
     timesteps_list = timesteps_list.round().long().unique_consecutive()
     for t_idx in tqdm(range(len(timesteps_list))):
         t = timesteps_list[t_idx].item()
@@ -132,6 +150,10 @@ def generate_latent(model: DiffusionModel,
                 latents = model.sqrt_alpha_bar[prev_t] * x_hat_0 + model.sqrt_one_minus_alpha_bar[prev_t] * pred_noise
             else:
                 latents = x_hat_0
+
+        if init_latent is not None and latent_mask is not None:
+            x_orig_t = torch.sqrt(alpha_t) * init_latent + sqrt_one_minus_alpha_bar_t * org_noise
+            latents = latent_mask * latents + inverse_mask * x_orig_t
 
         # Update after this step
         if progress_callback is not None:

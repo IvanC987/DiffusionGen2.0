@@ -83,6 +83,47 @@
             </div>
           </div>
 
+          <!-- Image-to-Image Section -->
+          <div style="margin-top: 15px; border-top: 1px solid #ddd; padding-top: 15px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+              <label for="init_image" style="margin: 0;">Upload Image (img2img):</label>
+              <button type="button" class="help-button" title="Help: To deselect an uploaded image, click 'Choose File', then immediately cancel without selection." style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; padding: 0; background: #2575fc; color: white; border: none; border-radius: 50%; cursor: help; font-size: 13px; font-weight: bold; transition: all 0.2s ease; position: relative;">?</button>
+            </div>
+            <input type="file" id="init_image" name="init_image" accept="image/*" style="width: 100%; margin-bottom: 10px;">
+
+            <label for="img2img_strength">
+              Img2img Strength: <span id="strengthValue">0.75</span> (0=clean, 1=noise)
+            </label>
+            <input
+              type="range"
+              id="img2img_strength"
+              name="img2img_strength"
+              min="0.0"
+              max="1.0"
+              step="0.05"
+              value="0.75"
+              disabled
+              style="width: 100%;">
+          </div>
+
+          <!-- In-Painting Section -->
+          <div style="margin-top: 15px; border-top: 1px solid #ddd; padding-top: 15px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+              <label for="inpaint_image" style="margin: 0;">Upload Image (in-painting):</label>
+            </div>
+            <input type="file" id="inpaint_image" name="inpaint_image" accept="image/*" style="width: 100%; margin-bottom: 10px;">
+
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; margin-top: 15px;">
+              <label for="inpaint_mask" style="margin: 0;">Upload Mask (in-painting):</label>
+              <button type="button" class="help-button" title="Help: Upload a binary mask (white = areas to modify, black = areas to keep). Use the editor button below to create one." style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; padding: 0; background: #2575fc; color: white; border: none; border-radius: 50%; cursor: help; font-size: 13px; font-weight: bold; transition: all 0.2s ease; position: relative;">?</button>
+            </div>
+            <input type="file" id="inpaint_mask" name="inpaint_mask" accept="image/*" style="width: 100%; margin-bottom: 10px;">
+
+            <a href="/editor" target="maskEditor" style="display: block; margin-bottom: 15px;">
+              <button type="button" style="width: 100%; background: linear-gradient(135deg, #6a11cb, #2575fc); color: white; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">Create Binary Mask (Editor)</button>
+            </a>
+          </div>
+
           <!-- Prompt Section -->
           <div class="prompt-container">
             <label for="prompt">Prompt:</label>

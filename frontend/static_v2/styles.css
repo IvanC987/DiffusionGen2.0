@@ -255,6 +255,116 @@ body.dark-mode {
   color: #666;
 }
 
+.sidebar input[type="range"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Img2img section styling */
+.sidebar > div[style*="border-top"] {
+  border-top-color: #ddd !important;
+}
+
+.dark-mode .sidebar > div[style*="border-top"] {
+  border-top-color: #444 !important;
+}
+
+/* Help Button Styling */
+.help-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  background: #2575fc;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: help;
+  font-size: 13px;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  position: relative;
+  box-shadow: 0 2px 4px rgba(37, 117, 252, 0.2);
+}
+
+.help-button:hover {
+  background: #1e5ec7;
+  transform: scale(1.15);
+  box-shadow: 0 4px 12px rgba(37, 117, 252, 0.4);
+}
+
+.help-button::after {
+  content: attr(title);
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #2c3e50;
+  color: white;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 1000;
+  font-weight: normal;
+  max-width: 220px;
+  white-space: normal;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  line-height: 1.4;
+}
+
+.help-button::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid #2c3e50;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.help-button:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+.help-button:hover::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+.dark-mode .help-button {
+  background: #2575fc;
+  box-shadow: 0 2px 4px rgba(37, 117, 252, 0.3);
+}
+
+.dark-mode .help-button:hover {
+  background: #1e5ec7;
+  box-shadow: 0 4px 12px rgba(37, 117, 252, 0.5);
+}
+
+.dark-mode .help-button::after {
+  background: #34495e;
+  color: #ecf0f1;
+}
+
+.dark-mode .help-button::before {
+  border-top-color: #34495e;
+}
+
 /* Config Row (Batch, CFG, Steps) */
 .config-row {
   display: flex;
