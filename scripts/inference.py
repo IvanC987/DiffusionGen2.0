@@ -58,6 +58,7 @@ def load_model_from_checkpoint(checkpoint_paths: str, use_ema: bool, device: str
 def generate_latent(model: DiffusionModel,
                     vae: AutoencoderKL,
                     prompt: torch.Tensor,
+                    second_prompt: torch.Tensor | None,
                     negative_prompt: torch.Tensor,
                     init_latent: torch.Tensor | None,
                     img2img_strength: float | None,
@@ -83,6 +84,11 @@ def generate_latent(model: DiffusionModel,
 
     assert list(prompt.shape) == [1, 77, 512]  # Assuming just a single prompt, max padded for now
     assert prompt.shape == negative_prompt.shape  # Negative prompt should be empty string
+
+    if second_prompt is not None:
+        assert list(second_prompt.shape) == [1, 77, 512]
+        second_prompt = second_prompt.repeat(batch_size, 1, 1)
+
     if latent_mask is not None:
         assert init_latent is not None
         # assert ((latent_mask == 0) | (latent_mask == 1)).all()
@@ -104,6 +110,7 @@ def generate_latent(model: DiffusionModel,
         latents = torch.randn((batch_size, 4, latent_dim, latent_dim), dtype=prompt.dtype, device=device)
 
     combined_prompts = torch.cat((prompt, negative_prompt), dim=0)  # Should be [2, 77, 512] now
+    combined_prompts_2 = torch.cat((second_prompt, negative_prompt), dim=0) if second_prompt is not None else None
     cfg_scales = torch.tensor([cfg] * batch_size, dtype=torch.float32, device=device).reshape(batch_size, 1, 1, 1)
 
     # Normally steps=T, but experimentally it would be interesting to see result when skipping steps
@@ -122,17 +129,37 @@ def generate_latent(model: DiffusionModel,
             cond_output, uncond_output = pred.chunk(2, dim=0)
             pred = cfg_scales.reshape(-1, 1, 1, 1) * (cond_output - uncond_output) + uncond_output
 
+            if combined_prompts_2 is not None:
+                # Flip the last two dims of tensor (B, C, H, W) for anagrams
+                rotated_latents = torch.flip(latents, dims=(-2, -1)).repeat(2, 1, 1, 1)
+                pred_2 = model.unet(rotated_latents, combined_prompts_2, timesteps.repeat(2))
+                cond_output, uncond_output = pred_2.chunk(2, dim=0)
+                pred_2 = cfg_scales.reshape(-1, 1, 1, 1) * (cond_output - uncond_output) + uncond_output
+
         if model.eps_pred:
-            pred_noise = pred
+            if combined_prompts_2 is None:
+                pred_noise = pred
+            else:
+                pred_noise = (pred + torch.flip(pred_2, dims=(-2, -1))) / 2
         else:
             alpha_bar_t = model.alpha_bar[t]
             sqrt_alpha_bar_t = torch.sqrt(alpha_bar_t)
             sqrt_one_minus_alpha_bar_t = torch.sqrt(1 - alpha_bar_t)
 
-            pred_noise = (
+            pred_noise_1 = (
                     sqrt_one_minus_alpha_bar_t * latents +
                     sqrt_alpha_bar_t * pred
             )
+
+            if combined_prompts_2 is None:
+                pred_noise = pred_noise_1
+            else:
+                pred_noise_2 = (
+                        sqrt_one_minus_alpha_bar_t * latents +
+                        sqrt_alpha_bar_t * torch.flip(pred_2, dims=(-2, -1))
+                )
+                pred_noise = 0.5 * (pred_noise_1 + pred_noise_2)
+
 
         # Compute mean of reverse process
         alpha_t = model.alpha[t]

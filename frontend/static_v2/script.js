@@ -383,6 +383,7 @@ document.getElementById('generateForm').addEventListener('submit', async functio
     // Build JSON payload
     const payload = {
       prompt: document.getElementById('prompt').value,
+      second_prompt: document.getElementById('second_prompt').value || '',
       negative_prompt: document.getElementById('negative_prompt').value,
       steps: Number(document.getElementById('steps').value),
       cfg: Number(document.getElementById('cfg').value),

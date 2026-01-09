@@ -61,6 +61,7 @@ generation_lock = threading.Lock()
 class GenerateRequest(BaseModel):
     batch_size: int
     prompt: str
+    second_prompt: str
     negative_prompt: str
     steps: int
     cfg: float
@@ -295,6 +296,7 @@ def generate(req: GenerateRequest):
             model=ema_model if req.use_ema else raw_model,
             vae=vae,
             prompt=prompt_embd,
+            second_prompt=tokenize_prompt(req.second_prompt),
             negative_prompt=negative_embd,
             init_latent=init_latent,
             img2img_strength=req.img2img_strength,

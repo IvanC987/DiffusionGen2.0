@@ -1,4 +1,6 @@
-checkpoint_path: outputs\22-29-18_toy_run\checkpoints\epoch_14_tl_0.8136.pt
+# checkpoint_path: outputs\22-29-18_toy_run\checkpoints\epoch_14_tl_0.8136.pt
+# checkpoint_path: outputs\17-43-50_final_256_baseline\checkpoints\epoch_49_tl_0.7330.pt
+checkpoint_path: outputs\model_weights\epoch_49_tl_0.7330.pt
 vae_model_id: "stabilityai/sd-vae-ft-ema"
 clip_model_id: "openai/clip-vit-base-patch32"
 real_esrgan_path: "assets/realesrgan/RealESRGAN_x2plus.pth"

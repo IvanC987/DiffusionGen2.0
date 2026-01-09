@@ -56,39 +56,68 @@
         <input type="number" id="preview_interval" name="preview_interval" value="5" min="1" max="100" step="1">
       </div>
 
-      <!-- Random Prompt Generation Section -->
+      <!-- 2nd Prompt (Visual Anagram) -->
       <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(0, 0, 0, 0.1);">
-        <button type="button" id="generate_random_prompt_btn" style="width: 100%; background: linear-gradient(135deg, #6a11cb, #2575fc); color: white; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-bottom: 12px;">Generate Random Prompt</button>
+        <label for="second_prompt" style="display: block; margin-bottom: 8px; font-weight: 500;">2nd Prompt (Visual Anagram) (Optional):</label>
+        <input
+          type="text"
+          id="second_prompt"
+          name="second_prompt"
+          placeholder="Prompt for visual anagram..."
+          style="width: 100%; margin-bottom: 15px;">
 
-        <label for="random_prompt_category" style="display: block; margin: 12px 0 6px 0; font-weight: 500;">Category:</label>
-        <select id="random_prompt_category" name="random_prompt_category" style="margin-bottom: 12px;">
-          <option value="any">Any</option>
-          <option value="dragon">Dragon</option>
-          <option value="phoenix">Phoenix</option>
-          <option value="qilin">Qilin</option>
-          <option value="mermaid">Mermaid</option>
-          <option value="fairy">Fairy</option>
-          <option value="elf">Elf</option>
-          <option value="aurora borealis">Aurora Borealis</option>
-          <option value="bamboo forest">Bamboo Forest</option>
-          <option value="desert">Desert</option>
-          <option value="glacier">Glacier</option>
-          <option value="jungle">Jungle</option>
-          <option value="lake">Lake</option>
-          <option value="mountain">Mountain</option>
-          <option value="night sky">Night Sky</option>
-          <option value="rainforest">Rainforest</option>
-          <option value="river">River</option>
-          <option value="savannah">Savannah</option>
-          <option value="volcano">Volcano</option>
-        </select>
-
-        <div style="display: flex; gap: 10px;">
-          <button type="button" id="random_prompt_train_btn" class="random-prompt-btn random-prompt-active" style="flex: 1; padding: 10px; border-radius: 6px; font-weight: 500; transition: all 0.3s ease;">Training Set</button>
-          <button type="button" id="random_prompt_val_btn" class="random-prompt-btn" style="flex: 1; padding: 10px; border-radius: 6px; font-weight: 500; transition: all 0.3s ease;">Validation Set</button>
+        <!-- Negative Prompt -->
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+          <label for="negative_prompt" style="margin: 0;">Negative Prompt (Optional):</label>
+          <button type="button" class="help-button" title="Help: If you're not sure, recommend leaving this empty" style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; padding: 0; background: #2575fc; color: white; border: none; border-radius: 50%; cursor: help; font-size: 13px; font-weight: bold; transition: all 0.2s ease; position: relative;">?</button>
         </div>
+        <input
+          type="text"
+          id="negative_prompt"
+          name="negative_prompt"
+          placeholder="What to avoid..."
+          style="width: 100%;">
+      </div>
 
-        <input type="hidden" id="random_prompt_split" name="random_prompt_split" value="train">
+      <!-- Image-to-Image Section -->
+      <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(0, 0, 0, 0.1);">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+          <label for="init_image" style="margin: 0;">Upload Image (img2img):</label>
+          <button type="button" class="help-button" title="Help: To deselect an uploaded image, click 'Choose File', then immediately cancel without selection." style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; padding: 0; background: #2575fc; color: white; border: none; border-radius: 50%; cursor: help; font-size: 13px; font-weight: bold; transition: all 0.2s ease; position: relative;">?</button>
+        </div>
+        <input type="file" id="init_image" name="init_image" accept="image/*" style="width: 100%; margin-bottom: 10px;">
+
+        <label for="img2img_strength">
+          Img2img Strength: <span id="strengthValue">0.75</span> (0=clean, 1=noise)
+        </label>
+        <input
+          type="range"
+          id="img2img_strength"
+          name="img2img_strength"
+          min="0.0"
+          max="1.0"
+          step="0.05"
+          value="0.75"
+          disabled
+          style="width: 100%;">
+      </div>
+
+      <!-- In-Painting Section -->
+      <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(0, 0, 0, 0.1);">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+          <label for="inpaint_image" style="margin: 0;">Upload Image (in-painting):</label>
+        </div>
+        <input type="file" id="inpaint_image" name="inpaint_image" accept="image/*" style="width: 100%; margin-bottom: 10px;">
+
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; margin-top: 15px;">
+          <label for="inpaint_mask" style="margin: 0;">Upload Mask (in-painting):</label>
+          <button type="button" class="help-button" title="Help: white = to modify, black = to keep. Use editor below to create mask." style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; padding: 0; background: #2575fc; color: white; border: none; border-radius: 50%; cursor: help; font-size: 13px; font-weight: bold; transition: all 0.2s ease; position: relative;">?</button>
+        </div>
+        <input type="file" id="inpaint_mask" name="inpaint_mask" accept="image/*" style="width: 100%; margin-bottom: 10px;">
+
+        <a href="/editor" target="maskEditor" style="display: block; margin-bottom: 15px;">
+          <button type="button" style="width: 100%; background: linear-gradient(135deg, #6a11cb, #2575fc); color: white; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">Create Binary Mask (Editor)</button>
+        </a>
       </div>
 
       <p style="margin-top: 15px; color: #666; font-size: 13px;">Other parameters available in Configuration panel on the left.</p>
@@ -118,47 +147,6 @@
             </div>
           </div>
 
-          <!-- Image-to-Image Section -->
-          <div style="margin-top: 15px; border-top: 1px solid #ddd; padding-top: 15px;">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-              <label for="init_image" style="margin: 0;">Upload Image (img2img):</label>
-              <button type="button" class="help-button" title="Help: To deselect an uploaded image, click 'Choose File', then immediately cancel without selection." style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; padding: 0; background: #2575fc; color: white; border: none; border-radius: 50%; cursor: help; font-size: 13px; font-weight: bold; transition: all 0.2s ease; position: relative;">?</button>
-            </div>
-            <input type="file" id="init_image" name="init_image" accept="image/*" style="width: 100%; margin-bottom: 10px;">
-
-            <label for="img2img_strength">
-              Img2img Strength: <span id="strengthValue">0.75</span> (0=clean, 1=noise)
-            </label>
-            <input
-              type="range"
-              id="img2img_strength"
-              name="img2img_strength"
-              min="0.0"
-              max="1.0"
-              step="0.05"
-              value="0.75"
-              disabled
-              style="width: 100%;">
-          </div>
-
-          <!-- In-Painting Section -->
-          <div style="margin-top: 15px; border-top: 1px solid #ddd; padding-top: 15px;">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-              <label for="inpaint_image" style="margin: 0;">Upload Image (in-painting):</label>
-            </div>
-            <input type="file" id="inpaint_image" name="inpaint_image" accept="image/*" style="width: 100%; margin-bottom: 10px;">
-
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; margin-top: 15px;">
-              <label for="inpaint_mask" style="margin: 0;">Upload Mask (in-painting):</label>
-              <button type="button" class="help-button" title="Help: white = to modify, black = to keep. Use editor below to create mask." style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; padding: 0; background: #2575fc; color: white; border: none; border-radius: 50%; cursor: help; font-size: 13px; font-weight: bold; transition: all 0.2s ease; position: relative;">?</button>
-            </div>
-            <input type="file" id="inpaint_mask" name="inpaint_mask" accept="image/*" style="width: 100%; margin-bottom: 10px;">
-
-            <a href="/editor" target="maskEditor" style="display: block; margin-bottom: 15px;">
-              <button type="button" style="width: 100%; background: linear-gradient(135deg, #6a11cb, #2575fc); color: white; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">Create Binary Mask (Editor)</button>
-            </a>
-          </div>
-
           <!-- Prompt Matching Section -->
           <div style="margin-top: 15px; border-top: 1px solid #ddd; padding-top: 15px;">
             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
@@ -175,6 +163,41 @@
             <input type="hidden" id="prompt_match_val" name="prompt_match_val" value="false">
           </div>
 
+          <!-- Random Prompt Generation Section -->
+          <div style="margin-top: 15px; border-top: 1px solid #ddd; padding-top: 15px;">
+            <label for="random_prompt_category" style="display: block; margin: 0 0 6px 0; font-weight: 500;">Category:</label>
+            <select id="random_prompt_category" name="random_prompt_category" style="margin-bottom: 12px;">
+              <option value="any">Any</option>
+              <option value="dragon">Dragon</option>
+              <option value="phoenix">Phoenix</option>
+              <option value="qilin">Qilin</option>
+              <option value="mermaid">Mermaid</option>
+              <option value="fairy">Fairy</option>
+              <option value="elf">Elf</option>
+              <option value="aurora borealis">Aurora Borealis</option>
+              <option value="bamboo forest">Bamboo Forest</option>
+              <option value="desert">Desert</option>
+              <option value="glacier">Glacier</option>
+              <option value="jungle">Jungle</option>
+              <option value="lake">Lake</option>
+              <option value="mountain">Mountain</option>
+              <option value="night sky">Night Sky</option>
+              <option value="rainforest">Rainforest</option>
+              <option value="river">River</option>
+              <option value="savannah">Savannah</option>
+              <option value="volcano">Volcano</option>
+            </select>
+
+            <button type="button" id="generate_random_prompt_btn" style="width: 100%; background: linear-gradient(135deg, #6a11cb, #2575fc); color: white; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-bottom: 12px;">Generate Random Prompt</button>
+
+            <div style="display: flex; gap: 10px;">
+              <button type="button" id="random_prompt_train_btn" class="random-prompt-btn random-prompt-active" style="flex: 1; padding: 10px; border-radius: 6px; font-weight: 500; transition: all 0.3s ease;">Training Set</button>
+              <button type="button" id="random_prompt_val_btn" class="random-prompt-btn" style="flex: 1; padding: 10px; border-radius: 6px; font-weight: 500; transition: all 0.3s ease;">Validation Set</button>
+            </div>
+
+            <input type="hidden" id="random_prompt_split" name="random_prompt_split" value="train">
+          </div>
+
           <!-- Prompt Section -->
           <div class="prompt-container">
             <label for="prompt">Prompt:</label>
@@ -184,20 +207,6 @@
               name="prompt"
               placeholder="Enter your prompt here..."
               required
-              style="width:100%;">
-          </div>
-
-          <!-- Negative Prompt -->
-          <div class="prompt-container">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-              <label for="negative_prompt" style="margin: 0;">Negative Prompt (Optional):</label>
-              <button type="button" class="help-button" title="Help: If you're not sure, recommend leaving this empty" style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; padding: 0; background: #2575fc; color: white; border: none; border-radius: 50%; cursor: help; font-size: 13px; font-weight: bold; transition: all 0.2s ease; position: relative;">?</button>
-            </div>
-            <input
-              type="text"
-              id="negative_prompt"
-              name="negative_prompt"
-              placeholder="What to avoid..."
               style="width:100%;">
           </div>
 
