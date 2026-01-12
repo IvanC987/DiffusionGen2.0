@@ -1,0 +1,11 @@
+torch==2.9.1
+transformers==4.43.0
+diffusers==0.35.2
+numpy==1.21.5
+pillow==9.0.1
+faiss-cpu==1.13.2
+torchvision==0.24.1
+realesrgan==0.3.0
+fastapi==0.121.1
+omegaconf==2.3.0
+accelerate==1.11.0

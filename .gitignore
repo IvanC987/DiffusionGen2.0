@@ -9,7 +9,6 @@ frontend/*
 !frontend/static_v2/
 !frontend/templates_v2/
 
-docker/
 /data/
 misc/
 outputs/
