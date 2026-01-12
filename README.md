@@ -79,7 +79,7 @@ Prompt B: "Towering mountain shrouded in haze sunlight barely breaks through"
 ```
 
 **How it works:**
-At each denoising step, the model predicts noise for both the original latent and a rotated copy conditioned on a second prompt. The predictions are rotated back and blended, enforcing symmetry over time. (Still a beta feature, would require prompts that would 'logically' merge)
+At each denoising step, the model predicts noise for both the original latent and a rotated copy conditioned on a second prompt. The predictions are rotated back and blended, enforcing symmetry over time. (Still a beta feature, would require prompts that 'semantically compatible' to work well.)
 
 | Prompt A | Prompt B | Combined (Anagram) |
 |---------|----------|--------------------|
@@ -89,12 +89,12 @@ At each denoising step, the model predicts noise for both the original latent an
 
 ### Semantic Prompt Matching (CLIP + FAISS)
 
-To reduce prompt distribution shift, free-form user prompts can be mapped to a curated prompt bank derived from the training data.
+To reduce prompt distribution shift (OOD), free-form user prompts can be mapped to a curated prompt bank that's stylistically similar to the training data.
 
 ```
-User input: "dragon"
-Matched prompt:
-"An ancient emerald-scaled dragon perched atop a snow-covered mountain at sunset"
+User input: "volcano"
+Example matched prompt:
+"A volcano rises above a jagged mountain range, its peak smoldering under a twilight sky."
 ```
 
 * Uses CLIP sentence embeddings
