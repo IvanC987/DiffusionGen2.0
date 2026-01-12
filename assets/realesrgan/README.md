@@ -1,1 +1,1 @@
-UPDATE LATER ON! 
+Place the pulled Read-ESRGAN model weight here!
