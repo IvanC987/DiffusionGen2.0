@@ -298,7 +298,7 @@ def generate(req: GenerateRequest):
             model=ema_model if req.use_ema else raw_model,
             vae=vae,
             prompt=prompt_embd,
-            second_prompt=tokenize_prompt(req.second_prompt),
+            second_prompt=tokenize_prompt(req.second_prompt) if req.second_prompt != "" else None,
             negative_prompt=negative_embd,
             init_latent=init_latent,
             img2img_strength=req.img2img_strength,
