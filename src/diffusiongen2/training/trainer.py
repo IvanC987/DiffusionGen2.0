@@ -199,8 +199,9 @@ def train(model: DiffusionModel,
 
             local_val_loss = []
             val_timer = time.time()
+            current_val_epoch = dataset_loader.val_epoch
             with torch.no_grad():
-                while dataset_loader.val_epoch == epoch:
+                while dataset_loader.val_epoch == current_val_epoch:
                     latents, text_embd = dataset_loader.get_batch(train=False)
                     timesteps = torch.randint(1, T, (latents.shape[0],)).to(device)
                     latents, text_embd = latents.to(device), text_embd.to(device)

@@ -13,8 +13,8 @@ class TimeEmbedding(nn.Module):
         t = torch.arange(T).unsqueeze(1)
         div_term = torch.exp(torch.arange(0, t_embd, 2).float() * -(math.log(10000.0) / t_embd))
 
-        te[:, 0::2] = torch.sin(t / div_term)
-        te[:, 1::2] = torch.cos(t / div_term)
+        te[:, 0::2] = torch.sin(t * div_term)
+        te[:, 1::2] = torch.cos(t * div_term)
 
         self.register_buffer("te", te)
 
